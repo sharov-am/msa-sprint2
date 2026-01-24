@@ -25,7 +25,7 @@ if _version_not_supported:
     )
 
 
-class BookingServiceStub(obязык прогарммирвоания Сиject):
+class BookingServiceStub(object):
     """gRPC-сервис бронирования
     """
 
