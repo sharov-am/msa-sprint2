@@ -164,7 +164,7 @@ class BookingService(booking_pb2_grpc.BookingServiceServicer):
                 promo_code = booking['promo_code'],
                 discount_percent = booking['discount_percent'],
                 price = booking['price'],
-                created_at=str(booking['created_at'])
+                created_at=str(booking['created_at'].isoformat())
             ))
             
             

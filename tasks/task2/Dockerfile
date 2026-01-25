@@ -19,7 +19,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY *.py .
 
-COPY run_booking_service.sh run_booking_service.sh
 # Create non-root user
 #RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 #USER appuser
