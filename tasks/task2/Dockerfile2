@@ -17,15 +17,13 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY booking-history-service.py .
+COPY *.py .
 
 COPY run_booking_history_service.sh run_booking_history_service.sh
+
 # Create non-root user
 #RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 #USER appuser
 
-# Expose gRPC port
-EXPOSE 50051
-
 # Command to run the server
-ENTRYPOINT ["./run_booking_history_service.sh"]
+ENTRYPOINT ["python","booking-history-service.py"]

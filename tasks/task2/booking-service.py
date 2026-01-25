@@ -91,12 +91,7 @@ class BookingService(booking_pb2_grpc.BookingServiceServicer):
         
         cur = conn.cursor()
 
-        """
-        cur.execute(f"INSERT INTO booking (user_id, hotel_id, promo_code, discount_percent, price, created_at) \
-                    VALUES (\"{booking['user_id']}\", \"{booking['hotel_id']}\", \"{booking['promo_code']}\",\"{booking['discount_percent']}\",\
-                        \"{booking['price']}\", \"{booking['created_at']}\" )")
-        """
-        
+         
         cur.execute("""
                     INSERT INTO booking ( user_id, hotel_id, promo_code, discount_percent, price, created_at)
                     VALUES (%s, %s, %s, %s, %s, %s)
@@ -112,8 +107,16 @@ class BookingService(booking_pb2_grpc.BookingServiceServicer):
 
         logging.info(f"Saved booking request to db.")
 
-                
-        self.kafka_producer.produce_message(key = None, value=booking)
+        booking_created = {
+            "event_type":"booking_created",
+            "payload":{
+                 'user_id': booking[0],
+                 'hotel_id' : booking[1],
+                 'price' : booking[4],
+                 'created_at':booking[5]
+            }
+        }        
+        self.kafka_producer.produce_message(key = None, value= booking_created)
                 
         logging.info(f"Sent booking request to kafka.")                 
         # Return response

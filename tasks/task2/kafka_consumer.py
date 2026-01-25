@@ -98,12 +98,13 @@ class KafkaConsumerService:
             timeout: Poll timeout
         """
         def booking_callback(key, value):
+            logger.info(f"Consuming booking event: {key,value}")
             event_type = value.get('event_type')
             payload = value.get('payload', {})
             
             logger.info(f"Processing booking event: {event_type}")
             
-            if event_type == 'BOOKING_CREATED':
+            if event_type == 'booking_created':
                 booking_handler(payload)
             else:
                 logger.warning(f"Unknown event type: {event_type}")

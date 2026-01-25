@@ -21,6 +21,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      - booking-db  
+      - kafka  
     container_name: booking-service
     ports:
       - "50051:50051"
@@ -32,6 +35,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile2
+    depends_on:
+      - booking-history-db  
+      - kafka
+      - booking-service
     container_name: booking-history-service
     networks:
       - hotelio-net

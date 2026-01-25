@@ -28,4 +28,4 @@ COPY run_booking_service.sh run_booking_service.sh
 EXPOSE 50051
 
 # Command to run the server
-ENTRYPOINT ["./run_booking_service.sh"]
+ENTRYPOINT ["python","booking-service.py"]
