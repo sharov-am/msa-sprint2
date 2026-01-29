@@ -7,15 +7,16 @@ import fetch from 'node-fetch';
 const typeDefs = gql`
   type Booking @key(fields: "id") {
     id: ID!
-    userId: String!
-    hotelId: String!
+    userId: ID!
+    hotelId: ID!
     promoCode: String
     discountPercent: Int
   }
 
   type Query {
-    bookingsByUser(userId: String!): [Booking]
-  }
+    bookingsByUser(userId: ID!): [Booking]
+    
+  }  
 `;
 
 
@@ -25,12 +26,24 @@ const resolvers = {
     bookingsByUser: async (_, { userId }, { req }) => {
 		try {
         
-                
-        const response = await fetch(`http://monolith:8080/api/bookings?userId=${userId}`, {
+      const isAuthResponse = await fetch(`http://monolith:8080/api/users/${userId}/authorized`, {
           method: 'GET',
           headers: {
-            //'Authorization': token,
-            'Content-Type': 'application/json'
+             'Content-Type': 'application/json'
+          }
+        });
+        
+      const data = await isAuthResponse.json();
+      const isAuthorized = isAuthResponse.ok && ( data === true || data.authorized === true);
+      
+      if (!isAuthorized) {
+          throw new Error(`User is not authorized`);
+        }
+      
+      const response = await fetch(`http://monolith:8080/api/bookings?userId=${userId}`, {
+          method: 'GET',
+          headers: {
+             'Content-Type': 'application/json'
           }
         });
         
@@ -54,19 +67,7 @@ const resolvers = {
         throw new Error(`Failed to fetch bookings: ${error.message}`);
       }
     },
-  },
-  Booking: {
-      
-     /* 
-     return : {
-          id: 7,
-          userId: 8,
-          hotelId: 9,
-          promoCode: null,
-          discountPercent: 0
-      }
-      */    	  
-  },
+  }
 };
 
 const server = new ApolloServer({
@@ -79,3 +80,5 @@ startStandaloneServer(server, {
 }).then(() => {
   console.log('✅ Booking subgraph ready at http://localhost:4001/');
 });
+
+

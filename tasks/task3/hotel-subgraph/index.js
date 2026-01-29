@@ -15,7 +15,7 @@ const createHotelLoader = () => {
     const hotels = await Promise.all(
       ids.map(async (id) => {
         try {
-          const response = await fetch(`http://localhost:8080/hotels/${id}`);
+          const response = await fetch(`http://monolith:8080/hotels/${id}`);
           if (!response.ok) {
             return { id, error: `Not found` };
           }
@@ -85,8 +85,19 @@ const resolvers = {
     },
   },
   Query: {
-    hotelsByIds: async (_, { ids }) => {
-      // TODO: Заглушка или REST-запрос
+    hotelsByIds: async (_, { ids }, { hotelLoader }) => {
+       // DataLoader автоматически batch'ит запросы
+      const results = await hotelLoader.loadMany(ids);
+      
+      // Обработка ошибок
+      return results.map(result => {
+        if (result instanceof Error) {
+          // Можно вернуть null или выбросить ошибку
+          console.error(result.message);
+          return null;
+        }
+        return result;
+      });
     },
   },
 };
@@ -97,6 +108,10 @@ const server = new ApolloServer({
 
 startStandaloneServer(server, {
   listen: { port: 4002 },
+   context: async ({ req }) => ({
+    req,
+    hotelLoader: createHotelLoader(),
+  })
 }).then(() => {
   console.log('✅ Hotel subgraph ready at http://localhost:4002/');
 });
