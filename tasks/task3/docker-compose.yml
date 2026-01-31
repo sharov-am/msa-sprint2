@@ -8,7 +8,8 @@ services:
     depends_on:
       - booking-subgraph
       - hotel-subgraph
-      #- promo-subgraph
+      - promo-subgraph
+     
     networks:
       - hotelio-net  
 
@@ -27,14 +28,14 @@ services:
       - hotelio-net    
 
 
-  # promo-subgraph:
-  #   build: ./promo-subgraph
-  #   depends_on:
-  #     - booking-subgraph
-  #   ports:
-  #     - "4003:4003"
-  #   networks:
-  #     - hotelio-net        
+  promo-subgraph:
+    build: ./promo-subgraph
+    depends_on:
+      - booking-subgraph
+    ports:
+      - "4003:4003"
+    networks:
+      - hotelio-net        
 
 networks:
   hotelio-net:

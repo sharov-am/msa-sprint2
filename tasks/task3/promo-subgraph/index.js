@@ -6,10 +6,12 @@ import fetch from 'node-fetch';
 
 const typeDefs = gql`
   
-  extend type Booking @key(fields: "id") {
+extend schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@override", "@key", "@requires", "@external"])
+  
+extend type Booking @key(fields: "id") {
     id: ID! @external
     promoCode: String @external
-    discountPercent: Float! @override(from: "booking-subgraph")  
+    discountPercent: Float! @override(from: "booking")  
     discountInfo: DiscountInfo @requires(fields: "promoCode")
 } 
   
@@ -25,7 +27,8 @@ const typeDefs = gql`
   
   #набор запросов для примера
   type Query {
-    validatePromoCode(code: String!, hotelId: ID): DiscountInfo!
+    validatePromoCode(code: String!, userId: ID): DiscountInfo!
+    
      }  
 `;
 
@@ -33,10 +36,10 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    validatePromoCode: async (_, { code, hotelId }) => {
+    validatePromoCode: async (_, { code, userId }) => {
       try {
-        // Реальный REST вызов
-        const response = await fetch('http://monolith:8080/api/promos/validate?code=${code}&userId=${hotelId}', {
+                
+        const response = await fetch(`http://monolith:8080/api/promos/validate?code=${code}&userId=${userId}`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',            
@@ -72,40 +75,13 @@ const resolvers = {
       }
     },
 
-    activePromoCodes: async () => {
-      try {
-        const response = await fetch('http://promo-service:8080/api/promocodes/active', {
-          headers: { 
-            'Authorization': `Bearer ${process.env.PROMO_SERVICE_TOKEN}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`Promo service error: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        
-        return data.promoCodes.map((promo: any) => ({
-          isValid: promo.isValid,
-          originalDiscount: promo.originalDiscount,
-          finalDiscount: promo.finalDiscount,
-          description: promo.description,
-          expiresAt: promo.expiresAt,
-          applicableHotels: promo.applicableHotelIds || []
-        }));
-        
-      } catch (error) {
-        console.error('Error fetching active promo codes:', error);
-        return []; // Возвращаем пустой массив при ошибке
-      }
-    },
   },
   
   Booking: {
     // Резолвер для Federation
     __resolveReference: (reference) => {
       // Возвращаем только поля, которые есть в reference
+      console.log(reference)
       return reference;
     }
   },
